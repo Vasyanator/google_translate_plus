@@ -2,5 +2,7 @@
     "Translate_user_input": true,
     "Translate_system_output": true,
     "language string": "ru",
-    "translate_paragraphs_individually": true
+    "translate_paragraphs_individually": true,
+    "debug": false,
+    "special_symbol": "~"
 }

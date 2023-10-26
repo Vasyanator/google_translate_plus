@@ -10,7 +10,6 @@ default_params = {
     "Translate_user_input": True,
     "Translate_system_output": True,
     "language string": "ru",
-    "translate_paragraphs_individually": True,
     "debug": False,
     "special_symbol": "~",
 
@@ -52,11 +51,14 @@ def output_modifier(string):
     return translate_text(string, "en", params['language string'])
 
 def translate_text(string, sourcelang, targetlang):
+    MAX_LEN = 1500
+    special_symbol = params.get('special_symbol', '~')
+
     if params.get('debug'):
         print(f"[Google translate plus]: The text is currently being translated: \n{string}\n\n")
-    special_symbol = params['special_symbol']
+
     fragments = re.split(f"{special_symbol}(.*?){special_symbol}", string)
-    
+
     translated_fragments = []
 
     for idx, fragment in enumerate(fragments):
@@ -64,18 +66,24 @@ def translate_text(string, sourcelang, targetlang):
             translated_fragments.append(fragment)
             continue
 
-        if params.get('translate_paragraphs_individually', False):
-            lines = fragment.splitlines()
-            translated_lines = [
-                str(GoogleTranslator(source=sourcelang, target=targetlang).translate(html.unescape(line))) if line.strip() else line 
-                for line in lines
-            ]
-            translated_fragments.append("\n".join(translated_lines))
-        else:
-            translated_str = str(GoogleTranslator(source=sourcelang, target=targetlang).translate(html.unescape(fragment)))
-            translated_fragments.append(html.escape(translated_str))
+        fragment = fragment.replace("\n", "***")
 
-    translated_text = "".join(translated_fragments).replace(special_symbol, '')
+        while len(fragment) > MAX_LEN:
+            pos = fragment.rfind("***", 0, MAX_LEN)
+            if pos == -1:
+                pos = MAX_LEN
+            part = fragment[:pos]
+            fragment = fragment[pos:]
+
+            translated_part = str(GoogleTranslator(source=sourcelang, target=targetlang).translate(html.unescape(part)))
+            translated_fragments.append(html.escape(translated_part))
+
+        translated_str = str(GoogleTranslator(source=sourcelang, target=targetlang).translate(html.unescape(fragment)))
+        translated_fragments.append(html.escape(translated_str))
+
+    translated_text = "".join(translated_fragments).replace("***", "\n")
+
+    translated_text = translated_text.replace(special_symbol, '')
 
     if params.get('debug'):
         print(f"[Google translate plus]: The text has been successfully translated. Result: \n{translated_text}\n\n")
@@ -102,7 +110,7 @@ def ui():
         Translate_system_output = gr.Checkbox(value=params['Translate_system_output'], label='Translate system output')
         special_symbol = gr.Textbox(value=params['special_symbol'], label='Special symbol. Text between these characters will not be translated. Some characters may cause errors.', type='text',)
         language = gr.Dropdown(value=language_name, choices=[k for k in language_codes], label='Language')
-        translate_paragraphs_individually = gr.Checkbox(value=params.get('translate_paragraphs_individually', False), label='Translate paragraphs individually')
+        debug = gr.Checkbox(value=params.get('debug', False), label='Log translation debug info to console')
     
     
     # Event functions to update the parameters in the backend
@@ -110,4 +118,4 @@ def ui():
     Translate_system_output.change(lambda x: params.update({"Translate_system_output": x}) or save_params(), Translate_system_output, None)
     special_symbol.change(lambda x: params.update({"special_symbol": x}) or save_params(), special_symbol, None)
     language.change(lambda x: params.update({"language string": language_codes[x]}), language, None)
-    translate_paragraphs_individually.change(lambda x: params.update({"translate_paragraphs_individually": x}), translate_paragraphs_individually, None)
+    debug.change(lambda x: params.update({"debug": x}), debug, None)

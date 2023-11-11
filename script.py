@@ -55,7 +55,7 @@ def translate_text(string, sourcelang, targetlang):
     special_symbol = params.get('special_symbol', '~')
 
     if params.get('debug'):
-        print(f"[Google translate plus]: The text is currently being translated: \n{string}\n\n")
+        print("[Google translate plus]: The text is currently being translated:", "\033[32m" + f"\n{string}\n\n" + "\033[0m")
 
     fragments = re.split(f"{special_symbol}(.*?){special_symbol}", string)
 
@@ -66,10 +66,10 @@ def translate_text(string, sourcelang, targetlang):
             translated_fragments.append(fragment)
             continue
 
-        fragment = fragment.replace("\n", "***")
+        fragment = fragment.replace("\n", "@ ")
 
         while len(fragment) > MAX_LEN:
-            pos = fragment.rfind("***", 0, MAX_LEN)
+            pos = fragment.rfind("@ ", 0, MAX_LEN)
             if pos == -1:
                 pos = MAX_LEN
             part = fragment[:pos]
@@ -81,12 +81,12 @@ def translate_text(string, sourcelang, targetlang):
         translated_str = str(GoogleTranslator(source=sourcelang, target=targetlang).translate(html.unescape(fragment)))
         translated_fragments.append(html.escape(translated_str))
 
-    translated_text = "".join(translated_fragments).replace("***", "\n")
+    translated_text = "".join(translated_fragments).replace("@ ", "\n")
 
     translated_text = translated_text.replace(special_symbol, '')
 
     if params.get('debug'):
-        print(f"[Google translate plus]: The text has been successfully translated. Result: \n{translated_text}\n\n")
+        print("[Google translate plus]: The text has been successfully translated. Result:", "\033[32m" + f"\n{translated_text}\n\n" + "\033[0m")
 
     return translated_text
     

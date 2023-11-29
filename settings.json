@@ -4,5 +4,5 @@
     "language string": "ru",
     "debug": false,
     "special_symbol": "~",
-	"newline_symbol": "@"
+    "newline_symbol": "@"
 }

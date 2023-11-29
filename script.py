@@ -12,7 +12,7 @@ default_params = {
     "language string": "ru",
     "debug": False,
     "special_symbol": "~",
-
+    "newline_symbol": "@",
 }
 try:
     if os.path.exists(settings_path):
@@ -53,6 +53,7 @@ def output_modifier(string):
 def translate_text(string, sourcelang, targetlang):
     MAX_LEN = 1500
     special_symbol = params.get('special_symbol', '~')
+    newline_symbol = params.get('newline_symbol', '@')
 
     if params.get('debug'):
         print("[Google translate plus]: The text is currently being translated:", "\033[32m" + f"\n{string}\n\n" + "\033[0m")
@@ -66,10 +67,10 @@ def translate_text(string, sourcelang, targetlang):
             translated_fragments.append(fragment)
             continue
 
-        fragment = fragment.replace("\n", "@ ")
+        fragment = fragment.replace("\n", newline_symbol + " ")
 
         while len(fragment) > MAX_LEN:
-            pos = fragment.rfind("@ ", 0, MAX_LEN)
+            pos = fragment.rfind(newline_symbol, 0, MAX_LEN)
             if pos == -1:
                 pos = MAX_LEN
             part = fragment[:pos]
@@ -81,7 +82,9 @@ def translate_text(string, sourcelang, targetlang):
         translated_str = str(GoogleTranslator(source=sourcelang, target=targetlang).translate(html.unescape(fragment)))
         translated_fragments.append(html.escape(translated_str))
 
-    translated_text = "".join(translated_fragments).replace("@ ", "\n")
+    translated_text = "".join(translated_fragments)
+    regex_pattern = r'\s?{}\s?'.format(re.escape(newline_symbol))
+    translated_text = re.sub(regex_pattern, '\n', translated_text)
 
     translated_text = translated_text.replace(special_symbol, '')
 
@@ -104,18 +107,24 @@ def ui():
     language_name = list(language_codes.keys())[list(language_codes.values()).index(params['language string'])]
 
     # Gradio elements
-    
-    with gr.Column():
-        Translate_user_input = gr.Checkbox(value=params['Translate_user_input'], label='Translate user input')
-        Translate_system_output = gr.Checkbox(value=params['Translate_system_output'], label='Translate system output')
-        special_symbol = gr.Textbox(value=params['special_symbol'], label='Special symbol. Text between these characters will not be translated. Some characters may cause errors.', type='text',)
-        language = gr.Dropdown(value=language_name, choices=[k for k in language_codes], label='Language')
-        debug = gr.Checkbox(value=params.get('debug', False), label='Log translation debug info to console')
-    
+    with gr.Accordion("Google Translate Plus", open=False):
+        with gr.Column():
+            Translate_user_input = gr.Checkbox(value=params['Translate_user_input'], label='Translate user input')
+            Translate_system_output = gr.Checkbox(value=params['Translate_system_output'], label='Translate system output')
+            with gr.Accordion("Advanced", open=False):
+                language = gr.Dropdown(value=language_name, choices=[k for k in language_codes], label='Language')
+                special_symbol = gr.Textbox(value=params['special_symbol'], label='Special symbol.', 
+                    info='Text between these symbols will not be translated. Some symbols may cause errors.', type='text',
+                    )
+                newline_symbol = gr.Textbox(value=params['newline_symbol'], label='newline symbol.', 
+                    info='Before translation, this symbol replaces the new line, and after translation it is removed. Needed to save strings after translation. Some symbols may cause errors.', 
+                    type='text',)
+                debug = gr.Checkbox(value=params.get('debug', False), label='Log translation debug info to console')
     
     # Event functions to update the parameters in the backend
     Translate_user_input.change(lambda x: params.update({"Translate_user_input": x}) or save_params(), Translate_user_input, None)
     Translate_system_output.change(lambda x: params.update({"Translate_system_output": x}) or save_params(), Translate_system_output, None)
     special_symbol.change(lambda x: params.update({"special_symbol": x}) or save_params(), special_symbol, None)
+    newline_symbol.change(lambda x: params.update({"newline_symbol": x}) or save_params(), newline_symbol, None)
     language.change(lambda x: params.update({"language string": language_codes[x]}), language, None)
     debug.change(lambda x: params.update({"debug": x}), debug, None)

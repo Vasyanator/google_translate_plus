@@ -3,5 +3,6 @@
     "Translate_system_output": true,
     "language string": "ru",
     "debug": false,
-    "special_symbol": "~"
+    "special_symbol": "~",
+	"newline_symbol": "@"
 }

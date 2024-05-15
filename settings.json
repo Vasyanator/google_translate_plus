@@ -4,5 +4,13 @@
     "language string": "ru",
     "debug": false,
     "special_symbol": "~",
-    "newline_symbol": "@"
+    "newline_symbol": "@",
+    "engine": "google",
+    "LibreTranslateAPI": "",
+    "max_length": 1500,
+    "disable_split": false,
+    "disable_newline_replacement": false,
+    "LibreTranslateAPIkey": "http://localhost:5000/",
+    "DeeplAPIkey": "",
+    "DeeplFreeAPI": true
 }

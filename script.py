@@ -155,6 +155,8 @@ def translate_text(string, sourcelang, targetlang):
         regex_pattern = r'\s?{}\s?'.format(re.escape(newline_symbol))
         translated_text = re.sub(regex_pattern, '\n', translated_text)
 
+    translated_text = translated_text.replace("&#x27;", "'").replace("&quot;", '"')
+
     if debug:
         print("[Google translate plus]: The text has been successfully translated. Result:", "\033[32m\n" + translated_text + "\033[0m\n\n")
         print("---------------------------------------------")

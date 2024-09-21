@@ -10,6 +10,7 @@ import concurrent.futures
 settings_path = "extensions/google_translate_plus/settings.json"
 
 default_params = {
+    "display_name": "Google Translate Plus",
     "Translate_user_input": True,
     "Translate_system_output": True,
     "language string": "ru",
@@ -216,18 +217,11 @@ def perform_translation(fragment, sourcelang, targetlang, engine, LibreTranslate
         translated_str = fragment  # No translation
     return translated_str
 
-def bot_prefix_modifier(string):
-    return string
-
 def save_params():
     with open(settings_path, "w") as file:
         json.dump(params, file, ensure_ascii=False, indent=4)
 
-def ui():
-    # Finding the language name from the language code to use as the default value
-    language_name = next((k for k, v in language_codes.items() if v == params.get('language string', 'ru')), 'English')
-    engine_name = next((k for k, v in engines.items() if v == params.get('engine', 'google')), 'Google Translate')
-
+def ui_block():
     # Gradio elements
     with gr.Accordion("Google Translate Plus", open=False):
         with gr.Column():
@@ -239,33 +233,6 @@ def ui():
                 info='Disables splitting long text into paragraphs. May improve translation quality, but Google Translate may give an error due to too long text.')
             disable_newline_replacement = gr.Checkbox(value=params.get('disable_newline_replacement', False), label='Disable newline replacement',
                 info='Disables the replacement of a newline by a special character. Recommended when using LibreTranslate.')
-            with gr.Accordion("Advanced", open=False):
-                language = gr.Dropdown(value=language_name, choices=[k for k in language_codes], label='Language')
-                engine = gr.Dropdown(value=engine_name, choices=[k for k in engines], label='Translation service')
-                special_symbol = gr.Textbox(value=params.get('special_symbol', '~'), label='Special symbol.',
-                    info='Text between these symbols will not be translated. Some symbols may cause errors.', type='text',
-                    )
-                newline_symbol = gr.Textbox(value=params.get('newline_symbol', '@'), label='Newline symbol',
-                    info='Before translation, this symbol replaces the new line, and after translation it is removed. Needed to save strings after translation. Some symbols may cause errors.',
-                    type='text',)
-                max_length = gr.Number(value=params.get('max_length', 1500), label='Maximum text length',
-                    info='If the text length exceeds this value, it will be divided into paragraphs before translation, each of which will be translated separately.',
-                    precision=0)
-                translation_timeout = gr.Number(value=params.get('translation_timeout', 10), label='Translation timeout (seconds)',
-                    info='Maximum time to wait for translation before retrying or failing.',
-                    precision=0)
-                debug = gr.Checkbox(value=params.get('debug', False), label='Log translation debug info to console')
-            with gr.Accordion("Translator settings", open=False):
-                LibreTranslateAPI = gr.Textbox(value=params.get('LibreTranslateAPI', "http://localhost:5000/"), label='LibreTranslate API',
-                    info='Your LibreTranslate address and port.',
-                    type='text',)
-                LibreTranslateAPIkey = gr.Textbox(value=params.get('LibreTranslateAPIkey', ""), label='LibreTranslate API key',
-                    info='Your LibreTranslate API key',
-                    type='text',)
-                DeeplAPIkey = gr.Textbox(value=params.get('DeeplAPIkey', ""), label='Deepl API key',
-                    info='Your Deepl Translator API key',
-                    type='text',)
-                DeeplFreeAPI = gr.Checkbox(value=params.get('DeeplFreeAPI', True), label='Use the free Deepl API')
 
     # Event functions to update the parameters in the backend
     Translate_user_input.change(lambda x: params.update({"Translate_user_input": x}) or save_params(), Translate_user_input, None)
@@ -274,7 +241,41 @@ def ui():
     disable_split.change(lambda x: params.update({"disable_split": x}) or save_params(), disable_split, None)
     disable_newline_replacement.change(lambda x: params.update({"disable_newline_replacement": x}) or save_params(), disable_newline_replacement, None)
 
-    # Advanced settings
+    
+def ui_params():
+    # Finding the language name from the language code to use as the default value
+    language_name = next((k for k, v in language_codes.items() if v == params.get('language string', 'ru')), 'English')
+    engine_name = next((k for k, v in engines.items() if v == params.get('engine', 'google')), 'Google Translate')
+    with gr.Row():
+        with gr.Column():
+            language = gr.Dropdown(value=language_name, choices=[k for k in language_codes], label='Language')
+            engine = gr.Dropdown(value=engine_name, choices=[k for k in engines], label='Translation service')
+            special_symbol = gr.Textbox(value=params.get('special_symbol', '~'), label='Special symbol.',
+                info='Text between these symbols will not be translated. Some symbols may cause errors.', type='text',
+                )
+            newline_symbol = gr.Textbox(value=params.get('newline_symbol', '@'), label='Newline symbol',
+                info='Before translation, this symbol replaces the new line, and after translation it is removed. Needed to save strings after translation. Some symbols may cause errors.',
+                type='text',)
+            max_length = gr.Number(value=params.get('max_length', 1500), label='Maximum text length',
+                info='If the text length exceeds this value, it will be divided into paragraphs before translation, each of which will be translated separately.',
+                precision=0)
+            translation_timeout = gr.Number(value=params.get('translation_timeout', 10), label='Translation timeout (seconds)',
+                info='Maximum time to wait for translation before retrying or failing.',
+                precision=0)
+            debug = gr.Checkbox(value=params.get('debug', False), label='Log translation debug info to console')
+        with gr.Column():
+            LibreTranslateAPI = gr.Textbox(value=params.get('LibreTranslateAPI', "http://localhost:5000/"), label='LibreTranslate API',
+                info='Your LibreTranslate address and port.',
+                type='text',)
+            LibreTranslateAPIkey = gr.Textbox(value=params.get('LibreTranslateAPIkey', ""), label='LibreTranslate API key',
+                info='Your LibreTranslate API key',
+                type='text',)
+            DeeplAPIkey = gr.Textbox(value=params.get('DeeplAPIkey', ""), label='Deepl API key',
+                info='Your Deepl Translator API key',
+                type='text',)
+            DeeplFreeAPI = gr.Checkbox(value=params.get('DeeplFreeAPI', True), label='Use the free Deepl API')
+                    
+    # settings listeners
     def update_special_symbol(x):
         if not x:
             raise gr.Error("Special symbol cannot be empty.")
@@ -295,7 +296,6 @@ def ui():
     translation_timeout.change(lambda x: params.update({"translation_timeout": int(x)}) or save_params(), translation_timeout, None)
     debug.change(lambda x: params.update({"debug": x}) or save_params(), debug, None)
 
-    # Translator settings
     LibreTranslateAPI.change(lambda x: params.update({"LibreTranslateAPI": x}) or save_params(), LibreTranslateAPI, None)
     LibreTranslateAPIkey.change(lambda x: params.update({"LibreTranslateAPIkey": x}) or save_params(), LibreTranslateAPIkey, None)
     DeeplAPIkey.change(lambda x: params.update({"DeeplAPIkey": x}) or save_params(), DeeplAPIkey, None)

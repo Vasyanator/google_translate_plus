@@ -240,7 +240,7 @@ def ui():
                 language = gr.Dropdown(value=language_name, choices=[k for k in language_codes], label='Language')
                 engine = gr.Dropdown(value=engine_name, choices=[k for k in engines], label='Translation service')
                 special_symbol = gr.Textbox(value=params.get('special_symbol', '~'), label='Special symbol.',
-                    info='Text between these symbols will not be translated. Some symbols may cause errors.', type='text',
+                    info='Text between two such syblols will not be translated. May cause inaccurate translations, and some symbols other than the standard ~ may cause errors.', type='text',
                     )
                 newline_symbol = gr.Textbox(value=params.get('newline_symbol', '@'), label='Newline symbol',
                     info='Before translation, this symbol replaces the new line, and after translation it is removed. Needed to save strings after translation. Some symbols may cause errors.',

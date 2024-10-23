@@ -111,10 +111,7 @@ def translate_text(string, sourcelang, targetlang):
             print("[Google translate plus]: Error: Newline symbol cannot be empty.")
         return string
 
-    if disable_newline_replacement:
-        fragments = [string]
-    else:
-        fragments = re.split(f"{re.escape(special_symbol)}(.*?){re.escape(special_symbol)}", string)
+    fragments = re.split(f"{re.escape(special_symbol)}(.*?){re.escape(special_symbol)}", string)
 
     translated_fragments = []
     try:
@@ -131,7 +128,7 @@ def translate_text(string, sourcelang, targetlang):
                 translated_str = translate_with_timeout(fragment, sourcelang, targetlang, engine, LibreTranslateAPI, LibreTranslateAPIkey, DeeplAPIkey, DeeplFreeAPI, translation_timeout)
                 if translated_str is None:
                     return string  # Return original text if translation failed
-                translated_fragments.append(html.escape(translated_str))
+                translated_fragments.append(translated_str)
             else:
                 while len(fragment) > 0:
                     if len(fragment) <= MAX_LEN:
@@ -147,7 +144,7 @@ def translate_text(string, sourcelang, targetlang):
                     translated_part = translate_with_timeout(part, sourcelang, targetlang, engine, LibreTranslateAPI, LibreTranslateAPIkey, DeeplAPIkey, DeeplFreeAPI, translation_timeout)
                     if translated_part is None:
                         return string  # Return original text if translation failed
-                    translated_fragments.append(html.escape(translated_part))
+                    translated_fragments.append(translated_part)
 
     except Exception as e:
         if debug:

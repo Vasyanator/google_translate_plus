@@ -5,7 +5,7 @@ This is an improved version of the https://github.com/oobabooga/text-generation-
 
 ## Functions
 - Preserves strings after translation by replacing `\n` with `@ ` before translating the text and vice versa.
-- Some text fragment may not be translated if it is taken between special characters (default `~`).
+- Some text fragment may not be translated if it is taken between special characters (default `~`). Example: ```~### Instruction:~ <your instruction> ~### Response:~``` which the model will see as ```~### Instruction:~ <your translated instruction> ~### Response:~```
 - You can enable or disable translation of user input and AI output.
 
 

@@ -233,7 +233,7 @@ def ui():
             enable_input_caching = gr.Checkbox(value=params.get('enable_input_caching', True), label='Enable input caching',
                 info='If enabled, identical input texts will use the cached translation instead of re-translating.')
             disable_split = gr.Checkbox(value=params.get('disable_split', False), label='Disable split',
-                info='Disables splitting long text into paragraphs. May improve translation quality, but Google Translate may give an error due to too long text.')
+                info='Disables splitting long text into paragraphs. May improve translation quality, but Google Translate may give an error due to too long text. This will also disable the special symbol.')
             disable_newline_replacement = gr.Checkbox(value=params.get('disable_newline_replacement', False), label='Disable newline replacement',
                 info='Disables the replacement of a newline by a special character. Recommended when using LibreTranslate.')
             with gr.Accordion("Advanced", open=False):
